@@ -25,3 +25,10 @@ This version processes extracted text only; it does not parse PDFs, perform OCR,
 
 ## Stack
 Python, FastAPI, Pydantic, pytest.
+
+## Explore more
+
+- [RAG Knowledge Base Assistant](https://github.com/HardikPaghdar/rag-knowledge-base-assistant) — source-grounded document Q&A.
+- [AI Invoice Processing Automation](https://github.com/HardikPaghdar/ai-invoice-processing-automation) — invoice field checks.
+- [AI Data Quality Monitor](https://github.com/HardikPaghdar/ai-data-quality-monitor) — CSV profiling and validation.
+- [More projects on my portfolio](https://hardikpaghdar.netlify.app/).
