@@ -1,34 +1,81 @@
 # AI Document Intelligence & Extraction
 
-A document-field extraction prototype with structured output, field-level rule-match signals, and a human-review indicator.
+A FastAPI prototype that extracts a small set of invoice fields from plain text and returns structured JSON with missing-field indicators and a human-review flag.
 
-## Features
-- Extract invoice number, date, vendor/supplier, and total from text
-- JSON output with missing-field list
-- Review-required flag for incomplete documents
-- Input size limit, automated tests, and CI
+> **Scope:** The current implementation uses regular expressions over text. It does not parse PDF/DOCX files, perform OCR, call an LLM, or interpret scanned documents.
 
-## Run locally
+## Fields extracted
+
+- Invoice number
+- Invoice date
+- Vendor/supplier name
+- Invoice total / amount due
+
+Each field receives a rule-match indicator: `0.95` when a regex matches and `0.0` when it does not. These are not calibrated confidence probabilities. Missing fields are listed, and `review_required` is true whenever any expected field is absent.
+
+## Extraction flow
+
+```mermaid
+flowchart TD
+    T[Plain-text invoice content] --> V[Validate request size and content]
+    V --> R[Regex field patterns]
+    R --> F[Structured invoice fields]
+    F --> M[Missing-field list]
+    F --> C[Rule-match signals]
+    M --> H[Human review flag]
+    C --> H
+```
+
+## Quick start
+
+Requirements: Python 3.10+.
+
 ```bash
+git clone https://github.com/HardikPaghdar/ai-document-intelligence-extraction.git
+cd ai-document-intelligence-extraction
+python -m venv .venv
+source .venv/bin/activate
+# Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn app:app --reload
 ```
-API docs: http://127.0.0.1:8000/docs.
 
-## Example payload
-```json
-{"text":"Vendor: Acme Ltd\nInvoice Number: INV-123\nDate: 2026-10-01\nTotal: $125.50"}
+Open http://127.0.0.1:8000/docs.
+
+## API endpoints
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /health` | Service status |
+| `POST /extract` | Extracts invoice fields from the submitted `text` value |
+
+Example request:
+
+```bash
+curl -X POST http://127.0.0.1:8000/extract \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Vendor: Acme Ltd\nInvoice Number: INV-123\nDate: 2026-10-01\nTotal: $125.50"}'
 ```
 
-## Honest scope
-This version processes extracted text only; it does not parse PDFs, perform OCR, or call a generative model. Confidence values mean a deterministic rule matched; they are not calibrated probabilities. Next steps: add PDF/OCR ingestion, schema validation, and a human-review UI.
+## Tests
 
-## Stack
-Python, FastAPI, Pydantic, pytest.
+```bash
+pytest
+```
 
-## Explore more
+GitHub Actions runs the automated test suite on pushes and pull requests.
 
-- [RAG Knowledge Base Assistant](https://github.com/HardikPaghdar/rag-knowledge-base-assistant) — source-grounded document Q&A.
-- [AI Invoice Processing Automation](https://github.com/HardikPaghdar/ai-invoice-processing-automation) — invoice field checks.
-- [AI Data Quality Monitor](https://github.com/HardikPaghdar/ai-data-quality-monitor) — CSV profiling and validation.
-- [More projects on my portfolio](https://hardikpaghdar.netlify.app/).
+## Limitations and safe use
+
+- Extraction depends on the document matching the configured labels and date/amount formats.
+- Regex matching may capture incorrect values from complex invoices; always review before accounting or payment use.
+- No currency normalization, tax calculation, line-item extraction, duplicate detection, or vendor verification is implemented.
+- Do not treat rule-match signals as calibrated model confidence.
+- Add secure file ingestion, OCR, schema validation, access controls, and a human review interface before handling real financial documents.
+
+## Related projects
+
+- [RAG Knowledge Base Assistant](https://github.com/HardikPaghdar/rag-knowledge-base-assistant)
+- [AI Invoice Processing Automation](https://github.com/HardikPaghdar/ai-invoice-processing-automation)
+- [AI Data Quality Monitor](https://github.com/HardikPaghdar/ai-data-quality-monitor)
+- [More projects on my portfolio](https://hardikpaghdar.netlify.app/)
